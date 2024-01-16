@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="bd3b39b8-1ec4-479c-bedf-4e0d8c74b1a5" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="9e87b969-5bb5-4e78-ba18-dc8cff455538" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="Kirankumar@123" database="db02" />
+	</db:config>
+	<flow name="Foreach" doc:id="16462035-a4b1-4652-8891-6bcc007deb3b" initialState="stopped">
+		<http:listener doc:name="Listener" doc:id="0b86d4ec-c639-4470-a80d-efff8b853ffd" config-ref="HTTP_Listener_config" path="insert"/>
+		<ee:transform doc:name="Transform Message" doc:id="cbbb93db-5246-4248-88a5-8e9af00f6409" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+1 to 100 map {
+	id: 100 + $$,
+	name : "niru",
+	lname : "reddy",
+	address : "hyd"	
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<foreach doc:name="For Each" doc:id="e8c68cae-3e53-431b-909c-5832dab6879a" >
+			<db:insert doc:name="Insert" doc:id="df580ade-7bb5-4962-82e4-f19f47cc91e7" config-ref="Database_Config">
+			<db:sql><![CDATA[INSERT INTO employee (id, name, lname, address)
+ 
+
+VALUES (:id, :name, :lname, :address)]]></db:sql>
+			<db:input-parameters><![CDATA[#[payload]]]></db:input-parameters>
+		</db:insert>
+			<ee:transform doc:name="Transform Message" doc:id="e39db10b-faee-46e7-bed9-3314980475ab">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		</foreach>
+	</flow>
+	<flow name="InsertRecords" doc:id="399a1054-d02e-436c-8e35-97c9b2e6c137" >
+		<http:listener doc:name="Listener" doc:id="418aaf9d-6819-4fb1-85ec-d9c15fd17595" config-ref="HTTP_Listener_config" path="test"/>
+		<db:insert doc:name="Insert" doc:id="f18baf75-806c-4116-aa9e-0dcc542ab346" config-ref="Database_Config">
+			<db:sql ><![CDATA[INSERT INTO employee VALUES (:id, column2, column3, ...)]]></db:sql>
+		</db:insert>
+	</flow>
+</mule>
