@@ -1,0 +1,18 @@
+#%RAML 1.0
+title: Data
+version: v1
+protocols:
+  - HTTP
+  - HTTPS
+mediaType: 
+- application/json
+/class:
+  get:
+    responses:
+      200:
+        body:
+          application/json:
+            example:
+              {
+                "Message" : "Succesfully data registered"
+              }
